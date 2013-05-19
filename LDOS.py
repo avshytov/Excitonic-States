@@ -109,8 +109,8 @@ nE = 500
 Evals = np.linspace (Emin, Emax, nE)
 
 Rmin = 0.0
-Rmax = 5.0
-nR = 200
+Rmax = 10.0
+nR = 500
 Rvals = np.linspace (Rmin, Rmax, nR)
 
 print ("Transforming eigenvectors to R-space")
@@ -167,6 +167,8 @@ print ("Creating color plot")
 mpl.figure()
 mpl.pcolor(XX, YY, LDOS)
 mpl.colorbar()
+mpl.xlim(Rmin, Rmax)
+mpl.ylim(Emin, Emax)
 mpl.title(r'LDOS, $\alpha = %g$' % alpha)
 mpl.xlabel(r'Distance $R$')
 mpl.ylabel(r'Energy $\epsilon$')
