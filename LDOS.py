@@ -7,11 +7,17 @@ from matplotlib import rc
 rc('text', usetex = True)
 rc('font', family = 'serif')
 
-Nx = 50
-Ny = 50
-pxmax = 3.14
-pymax = 3.14
-gamma = 0.05
+# Momentum space grid
+Nx = 75
+Ny = 75
+pxmax = 3.14 
+pymax = 3.14  
+
+
+gamma = 0.05  # LDOS broadening
+eta   = 0.00  # t' / t ratio??
+alpha = 2.0   # Coulomb interaction strength
+
 
 if False:
 	Nx = int(input("Nx = "))
@@ -30,7 +36,6 @@ px = np.linspace(-pxmax, pxmax, Nx)
 py = np.linspace(-pymax, pymax, Ny)
 deltaPx = px[1] - px[0]
 deltaPy = py[1] - py[0]
-alpha = 2.0
 Cv = float(deltaPx * deltaPy) / 2.0 / math.pi
 
 
@@ -87,6 +92,9 @@ for iX1 in range (Nx):
 					
 		H0[ i0,     i0 + 1 ] = Ep
 		H0[ i0 + 1, i0     ] = Ep
+		
+		H0[i0, i0] = H0[i0 + 1, i0 + 1] = (px1 * px1 + py1 * py1) * 3.0 * eta 
+		
 				
 H = H0 + alpha * V
 
@@ -101,80 +109,82 @@ if False:
 		ev = a[:, icheck]
 		print ("icheck = ", icheck, "norm:",  lin.norm(np.dot(H, ev) - Echeck * ev)) 
 
-theta = 0.0
 
+		
+		
 Emin = -5.0 
 Emax = +5.0 
 nE = 500
 Evals = np.linspace (Emin, Emax, nE)
 
-Rmin = 0.0
+Rmin = -10.0
 Rmax = 10.0
 nR = 500
 Rvals = np.linspace (Rmin, Rmax, nR)
 
-print ("Transforming eigenvectors to R-space")
-
-print ("Generating the Unitary transform")
-U = np.zeros((len(Rvals), N/2), dtype=complex)
-for iX in range(Nx):
-	for iY in range(Ny):
-		for R in range(len(Rvals)):
-			i = (iX * Ny + iY)
-			px_i = px[iX] 
-			py_i = py[iY]
-			pr = (px_i * math.cos(theta) + py_i * math.sin(theta)) * Rvals[R]
-			U[R, i] = math.cos(pr) + 1j * math.sin(pr)
-
-print ("Doing unitary transformation to the R space")
-psi3 = np.zeros((N,len(Rvals)), dtype=complex)
-psi4 = np.zeros((N,len(Rvals)), dtype=complex)
-for n in range (len(E)):
-	psi3[n, :] = np.dot(U,  a[ ::2, n])
-	psi4[n, :] = np.dot(U,  a[1::2, n])
-
-print ("done")
-print ("Calculating LDOS")
-#calculate the probability densities
-probDensity = np.abs(psi3)**2 + np.abs(psi4)**2
-
-#calculate LDOS
-LDOS = np.zeros((len(Evals), len(Rvals)))
 D    = np.zeros((len(Evals), len(E)))
-
 for epsilon in range(len(Evals)):
 	for n in range(len(E)):
 		D[epsilon, n] = 1.0  / ((Evals[epsilon] - E[n])**2 + gamma**2) 
 D *= gamma / math.pi 
 
-LDOS = np.dot(D, probDensity)
+for theta in [0.0]: 
+	print ("Transforming eigenvectors to R-space")
 
-if False:
-	LDOS1 = np.zeros((len(Evals),len(Rvals)))
-	for epsilon in range(len(Evals)):
-		for R in range (len(Rvals)):
-			for n in range (len(E)):
-				LDOS1[epsilon,R]+= gamma * probDensity[n,R] / (math.pi  * ((Evals[epsilon] - E[n])**2 + gamma**2))
-	print("diff: ", lin.norm(LDOS1 - LDOS))
+	print ("Generating the Unitary transform")
+	U = np.zeros((len(Rvals), N/2), dtype=complex)
+	for iX in range(Nx):
+		for iY in range(Ny):
+			for R in range(len(Rvals)):
+				i = (iX * Ny + iY)
+				px_i = px[iX] 
+				py_i = py[iY]
+				pr = (px_i * math.cos(theta) + py_i * math.sin(theta)) * Rvals[R]
+				U[R, i] = math.cos(pr) + 1j * math.sin(pr)
 
+	print ("Doing unitary transformation to the R space")
+	psi3 = np.zeros((N,len(Rvals)), dtype=complex)
+	psi4 = np.zeros((N,len(Rvals)), dtype=complex)
+	for n in range (len(E)):
+	    psi3[n, :] = np.dot(U,  a[ ::2, n])
+	    psi4[n, :] = np.dot(U,  a[1::2, n])
 
-print ("done")
-print(LDOS)
+	print ("done")
+	print ("Calculating LDOS")
+	#calculate the probability densities
+	probDensity = np.abs(psi3)**2 + np.abs(psi4)**2
 
-XX, YY = np.meshgrid(Rvals, Evals)
+	#calculate LDOS
+	LDOS = np.zeros((len(Evals), len(Rvals)))
 
-print ("Creating color plot")
+	LDOS = np.dot(D, probDensity)
+
+	print ("done")
+	print(LDOS)
+
+	XX, YY = np.meshgrid(Rvals, Evals)
+
+	print ("Creating color plot")
+	mpl.figure()
+	mpl.pcolor(XX, YY, LDOS)
+	mpl.colorbar()
+	mpl.xlim(Rmin, Rmax)
+	mpl.ylim(Emin, Emax)
+	theta_pi = theta / math.pi
+	
+	if    (abs(theta_pi) < 1e-4): 
+		theta_s = r'$\theta = 0$'
+	elif (abs(theta_pi - 1.0) < 1e-4): 
+		theta_s = r'$\theta = \pi$'
+	else:
+		theta_s = r'$\theta = %g \pi$' % theta_pi
+		
+	mpl.title(r'LDOS, $\alpha = %g$, $N_x = %d \times %d$, $\eta = %g$ %s' % (theta/math.pi, alpha, Nx, Ny, eta, theta_s))
+	mpl.xlabel(r'Distance $R$')
+	mpl.ylabel(r'Energy $\epsilon$')
+
 mpl.figure()
-mpl.pcolor(XX, YY, LDOS)
-mpl.colorbar()
-mpl.xlim(Rmin, Rmax)
-mpl.ylim(Emin, Emax)
-mpl.title(r'LDOS, $\alpha = %g$' % alpha)
-mpl.xlabel(r'Distance $R$')
-mpl.ylabel(r'Energy $\epsilon$')
-
-mpl.figure()
-mpl.hist(E, bins=50)
+mpl.hist(E, bins=100)
 
 mpl.show()
 
