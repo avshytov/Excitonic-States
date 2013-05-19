@@ -8,8 +8,8 @@ rc('text', usetex = True)
 rc('font', family = 'serif')
 
 # Momentum space grid
-Nx = 75
-Ny = 75
+Nx = 25
+Ny = 25
 pxmax = 3.14 
 pymax = 3.14  
 
@@ -179,7 +179,7 @@ for theta in [0.0]:
 	else:
 		theta_s = r'$\theta = %g \pi$' % theta_pi
 		
-	mpl.title(r'LDOS, $\alpha = %g$, $N_x = %d \times %d$, $\eta = %g$ %s' % (theta/math.pi, alpha, Nx, Ny, eta, theta_s))
+	mpl.title(r'LDOS, $\alpha = %g$, $N_x = %d \times %d$, $\eta = %g$ %s' % (alpha, Nx, Ny, eta, theta_s))
 	mpl.xlabel(r'Distance $R$')
 	mpl.ylabel(r'Energy $\epsilon$')
 
