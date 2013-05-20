@@ -15,10 +15,10 @@ pymax = 3.14
 
 
 gamma = 0.05  # LDOS broadening
-eta   = 2.0   # eta = 6 * t' / t ?? Check
+eta   = 1.1   # eta = 6 * t' / t ?? Check
               # the kinetic energy is k^2 cos 3\phi + eta * k^2
 alpha = 0.5   # Coulomb interaction strength
-
+h     = 5.0   # layer spacing
 
 if False:
 	Nx = int(input("Nx = "))
@@ -67,7 +67,7 @@ for iX1 in range (Nx):			#1,-0.8		0.005,
 
 				cosphi = math.cos( phi1 - phi2 ) # not np.cos!
 				#cosphi = 1.0
-				Uq = -1.0 / q
+				Uq = -1.0 / q * math.exp( - q * h )
 				
 				V[i0,j0] = Uq * cosphi
 				V[j0,i0] = V[i0, j0] 
@@ -181,7 +181,7 @@ for theta in [0.0]:
 	else:
 		theta_s = r'$\theta = %g \pi$' % theta_pi
 		
-	mpl.title(r'LDOS, $\alpha = %g$, $N = %d \times %d$, $\eta = %g$, %s' % (alpha, Nx, Ny, eta, theta_s))
+	mpl.title(r'LDOS, $\alpha = %g$, $N = %d \times %d$, $\eta = %g$, $h = %g$,  %s' % (alpha, Nx, Ny, eta, h, theta_s))
 	mpl.xlabel(r'Distance $R$')
 	mpl.ylabel(r'Energy $\epsilon$')
 
