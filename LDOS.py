@@ -8,15 +8,16 @@ rc('text', usetex = True)
 rc('font', family = 'serif')
 
 # Momentum space grid
-Nx = 25
-Ny = 25
+Nx = 75
+Ny = 75
 pxmax = 3.14 
 pymax = 3.14  
 
 
 gamma = 0.05  # LDOS broadening
-eta   = 0.00  # t' / t ratio??
-alpha = 2.0   # Coulomb interaction strength
+eta   = 0.8   # eta = 6 * t' / t ?? Check
+              # the kinetic energy is k^2 cos 3\phi + eta * k^2
+alpha = 0.5   # Coulomb interaction strength
 
 
 if False:
@@ -65,6 +66,7 @@ for iX1 in range (Nx):			#1,-0.8		0.005,
 				        q = math.sqrt((px1-px2)**2+(py1-py2)**2)
 
 				cosphi = math.cos( phi1 - phi2 ) # not np.cos!
+				#cosphi = 1.0
 				Uq = -1.0 / q
 				
 				V[i0,j0] = Uq * cosphi
@@ -82,18 +84,18 @@ for iX1 in range (Nx):
 		px1 = px[iX1] 
 		py1 = py[iY1] 
 				
-		p    = math.sqrt(px1**2+py1**2)
-		phi1 = np.arctan2(py1,px1)
+		p    = px1**2 + py1**2
+		phi1 = np.arctan2(py1, px1)
 				
 		if True:
-			Ep = p**2 * math.cos( 3.0 * phi1 )
+			Ep = p2 * math.cos( 3.0 * phi1 )
 		else:
-			Ep = p**2
+			Ep = p2
 					
 		H0[ i0,     i0 + 1 ] = Ep
 		H0[ i0 + 1, i0     ] = Ep
 		
-		H0[i0, i0] = H0[i0 + 1, i0 + 1] = (px1 * px1 + py1 * py1) * 3.0 * eta 
+		H0[i0, i0] = H0[i0 + 1, i0 + 1] = p2 * eta 
 		
 				
 H = H0 + alpha * V
@@ -179,7 +181,7 @@ for theta in [0.0]:
 	else:
 		theta_s = r'$\theta = %g \pi$' % theta_pi
 		
-	mpl.title(r'LDOS, $\alpha = %g$, $N_x = %d \times %d$, $\eta = %g$ %s' % (alpha, Nx, Ny, eta, theta_s))
+	mpl.title(r'LDOS, $\alpha = %g$, $N = %d \times %d$, $\eta = %g$, %s' % (alpha, Nx, Ny, eta, theta_s))
 	mpl.xlabel(r'Distance $R$')
 	mpl.ylabel(r'Energy $\epsilon$')
 
