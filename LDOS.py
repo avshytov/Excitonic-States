@@ -15,7 +15,7 @@ pymax = 3.14
 
 
 gamma = 0.05  # LDOS broadening
-eta   = 0.8   # eta = 6 * t' / t ?? Check
+eta   = 0.9   # eta = 6 * t' / t ?? Check
               # the kinetic energy is k^2 cos 3\phi + eta * k^2
 alpha = 0.5   # Coulomb interaction strength
 
@@ -84,7 +84,7 @@ for iX1 in range (Nx):
 		px1 = px[iX1] 
 		py1 = py[iY1] 
 				
-		p    = px1**2 + py1**2
+		p2   = px1**2 + py1**2
 		phi1 = np.arctan2(py1, px1)
 				
 		if True:
