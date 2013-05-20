@@ -15,7 +15,7 @@ pymax = 3.14
 
 
 gamma = 0.05  # LDOS broadening
-eta   = 0.9   # eta = 6 * t' / t ?? Check
+eta   = 2.0   # eta = 6 * t' / t ?? Check
               # the kinetic energy is k^2 cos 3\phi + eta * k^2
 alpha = 0.5   # Coulomb interaction strength
 
@@ -39,11 +39,11 @@ deltaPx = px[1] - px[0]
 deltaPy = py[1] - py[0]
 Cv = float(deltaPx * deltaPy) / 2.0 / math.pi
 
-
 #potential energy terms
 for iX1 in range (Nx):			#1,-0.8		0.005,
 	for iY1 in range (Ny):
-		for iX2 in range (Nx):
+		for iX2 in range (iX1, Nx): # We do not need to scan the matrix
+			                    # twice
 			for iY2 in range (Ny):
 
 				i0 = (iX1*Ny + iY1)*2
