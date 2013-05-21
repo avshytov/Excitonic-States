@@ -97,7 +97,7 @@ def transformToRSpace (px, py, a, theta, Rvals):
 	print ("Doing unitary transformation to the R space")
 	psi3 = np.zeros((N,len(Rvals)), dtype=complex)
 	psi4 = np.zeros((N,len(Rvals)), dtype=complex)
-	for n in range (len(E)):
+	for n in range (N):
 	    psi3[n, :] = np.dot(U,  a[ ::2, n])
 	    psi4[n, :] = np.dot(U,  a[1::2, n])
 
