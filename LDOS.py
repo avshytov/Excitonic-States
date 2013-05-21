@@ -8,8 +8,8 @@ rc('text', usetex = True)
 rc('font', family = 'serif')
 
 # Momentum space grid
-Nx = 75
-Ny = 75
+Nx = 20
+Ny = 20
 pxmax = 3.14 
 pymax = 3.14  
 
@@ -18,7 +18,7 @@ gamma = 0.05  # LDOS broadening
 eta   = 1.1   # eta = 6 * t' / t ?? Check
               # the kinetic energy is k^2 cos 3\phi + eta * k^2
 alpha = 0.5   # Coulomb interaction strength
-h     = 5.0   # layer spacing
+h     = 1.0   # layer spacing
 
 if False:
 	Nx = int(input("Nx = "))
@@ -40,10 +40,10 @@ deltaPy = py[1] - py[0]
 Cv = float(deltaPx * deltaPy) / 2.0 / math.pi
 
 #potential energy terms
-for iX1 in range (Nx):			#1,-0.8		0.005,
+for iX1 in range (Nx):			
 	for iY1 in range (Ny):
 		for iX2 in range (iX1, Nx): # We do not need to scan the matrix
-			                    # twice
+			                    	# twice
 			for iY2 in range (Ny):
 
 				i0 = (iX1*Ny + iY1)*2
@@ -101,9 +101,16 @@ for iX1 in range (Nx):
 H = H0 + alpha * V
 
 print ("Diagonalising...")
-(E,a) = lin.eigh(H)		#calculate eigenvalues, a are the row eigenvectors
+(E,a) = lin.eigh(H)		#calculate eigenvalues, a[] are the row eigenvectors
 print ("done")
 
+eigFile = open("eigenvalues.txt",'w')
+for n in range (len(E)):
+	eigFile.write(str(n))
+	eigFile.write('\t')
+	eigFile.write(str(E[n]))
+	eigFile.write('\n')
+eigFile.close()
 
 if False:
 	for icheck in [ 0, N-1, N/2]:
