@@ -122,11 +122,22 @@ def makeKinetic(px, py, eta):
 			H0[i0, i0] = H0[i0 + 1, i0 + 1] = p2 * eta 
 	return H0		
 
-def transformToRSpace (px, py, a, theta, Rvals):
+def transformToRSpace (px, py, a, thetavals, Rvals):
 	nR = len(Rvals)
 	Nx = len(px)
 	Ny = len(py)
 	N = 2 * Nx * Ny
+
+	if type(thetavals) == type(0.0):
+		theta = thetavals
+		thetavals = np.zeros(shape(R))
+		thetavals[:] = theta
+
+	if len(thetavals) != len(Rvals):
+		import sys
+		print ("Unequal sizes of thetavals and Rvals in transformToRSpace")
+		sys.exit(1)
+       	
 	print ("Transforming eigenvectors to R-space")
 
 	print ("Generating the Unitary transform")
@@ -137,6 +148,7 @@ def transformToRSpace (px, py, a, theta, Rvals):
 				i = (iX * Ny + iY)
 				px_i = px[iX] 
 				py_i = py[iY]
+				theta = thetavals[R]
 				pr = (px_i * math.cos(theta) + py_i * math.sin(theta)) * Rvals[R]
 				U[R, i] = math.cos(pr) + 1j * math.sin(pr)
 
@@ -233,8 +245,8 @@ if __name__ == '__main__':
 		eigFile.write('\n')
 	eigFile.close()
 
-	Rmin = -10.0
-	Rmax = 10.0
+	Rmin = -20.0
+	Rmax = 20.0
 	nR = 500
 	Rvals = np.linspace (Rmin, Rmax, nR)
 
