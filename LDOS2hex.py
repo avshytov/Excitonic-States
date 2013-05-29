@@ -261,18 +261,43 @@ if __name__ == '__main__':
 	rc('text', usetex = True)
 	rc('font', family = 'serif')
     
+	q_e = 1.602e-19
+	nm = 1e-9
+	eps_0 = 8.85e-12
+	a = 0.142
+	eV = q_e
+	meV = 0.001 * eV
+	t_prime = 0.2 * eV
+	vD = 1e+6
+	hbar = 1.054e-34
+	
+	E_u = 9.0 / 4.0 * t_prime * a**2 / meV 
+	
+	C_0 = q_e**2 / 4.0 / math.pi / eps_0 / hbar / vD 
+	print "C_0 = ", C_0
+	eps_s = 3.9                 # environment (substrates)
+	eps_g = math.pi / 2.0 * C_0 # intrinsic dielectric constant
+	eps = eps_s + eps_g       
+	print "eps_g = ", eps_g, "eps = ", eps
+	
 	Nx = 25
-	pxmax = 3.14
-	alpha = 1.0
-	h = 0.01
-	eta = 0.7
+	pxmax = 3.14  / a
+	alpha = (q_e)** 2 / 4.0 / math.pi / eps_0 / eps / nm / E_u / meV 
+	print "alpha = ", alpha
+	
+	print "alpha = ", alpha
+	h = 1.3
+	eta = 1.1
+	
+	E_u = 9.0
+		
 	#px, py = makeGrid (Nx, Ny, pxmax, pymax)
 	#H = makeKinetic(px, py, eta) + alpha * makePotential (px, py, alpha, h)
 	if True:
 		px, py, E, a = solveAndSave(Nx, pxmax, alpha, h, eta)
 	else:
 		px, py, E, a = loadSolution(Nx, alpha, h, eta)   
-	gamma = 0.05
+	gamma = 1.0 / E_u
 
 	eigFile = open("eigenvalues-hex.txt",'w')
 	for n in range (len(E)):
@@ -282,18 +307,18 @@ if __name__ == '__main__':
 		eigFile.write('\n')
 	eigFile.close()
 
-	Rmin = -20.0
-	Rmax = 20.0
+	Rmin = 0.0
+	Rmax = 7.0
 	nR = 500
 	Rvals = np.linspace (Rmin, Rmax, nR)
 
 	theta = 0.0
 	psi3, psi4, probDensity = transformToRSpace(px, py, a, theta, Rvals)
 
-	Emin = -5.0 
-	Emax = +5.0 
+	Emin = -100.0 
+	Emax =  100.0 
 	nE = 500
-	Evals = np.linspace (Emin, Emax, nE)
+	Evals = np.linspace (Emin/E_u, Emax/E_u, nE)
 
 	LDOS = makeLDOS(psi3, psi4, probDensity, E, Evals, gamma)
 
@@ -301,7 +326,7 @@ if __name__ == '__main__':
 
 	print ("Creating color plot")
 	mpl.figure()
-	mpl.pcolor(XX, YY, LDOS)
+	mpl.pcolor(XX, YY * E_u, LDOS)
 	mpl.colorbar()
 	mpl.xlim(Rmin, Rmax)
 	mpl.ylim(Emin, Emax)
@@ -315,10 +340,10 @@ if __name__ == '__main__':
 		theta_s = r'$\theta = %g \pi$' % theta_pi
 
 	mpl.title(r'LDOS, $\alpha = %g$, $N = %d$, $\eta = %g$, $h = %g$,  %s' % (alpha, Nx, eta, h, theta_s))
-	mpl.xlabel(r'Distance $R$')
-	mpl.ylabel(r'Energy $\epsilon$')
+	mpl.xlabel(r'Distance $R$, nm')
+	mpl.ylabel(r'Energy $\epsilon$, meV')
 
 	mpl.figure()
-	mpl.hist(E, bins=100)
+	mpl.hist(E * E_u, bins=100)
 
 	mpl.show()
