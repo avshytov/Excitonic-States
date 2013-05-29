@@ -267,7 +267,7 @@ if __name__ == '__main__':
 	a = 0.142
 	eV = q_e
 	meV = 0.001 * eV
-	t_prime = 0.2 * eV
+	t_prime = 0.2 * 2.8 * eV
 	vD = 1e+6
 	hbar = 1.054e-34
 	
@@ -308,15 +308,15 @@ if __name__ == '__main__':
 	eigFile.close()
 
 	Rmin = 0.0
-	Rmax = 7.0
+	Rmax = 5.0
 	nR = 500
 	Rvals = np.linspace (Rmin, Rmax, nR)
 
 	theta = 0.0
 	psi3, psi4, probDensity = transformToRSpace(px, py, a, theta, Rvals)
 
-	Emin = -100.0 
-	Emax =  100.0 
+	Emin = -50.0 
+	Emax =  50.0 
 	nE = 500
 	Evals = np.linspace (Emin/E_u, Emax/E_u, nE)
 
