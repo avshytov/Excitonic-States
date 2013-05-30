@@ -271,8 +271,8 @@ if __name__ == '__main__':
 	vD = 1e+6
 	hbar = 1.054e-34
 	
-	E_u = 9.0 / 4.0 * t_prime * a**2 / meV 
 	
+	E_u = 9.0 / 4.0 * t_prime * a**2 / meV 
 	C_0 = q_e**2 / 4.0 / math.pi / eps_0 / hbar / vD 
 	print "C_0 = ", C_0
 	eps_s = 3.9                 # environment (substrates)
@@ -280,16 +280,16 @@ if __name__ == '__main__':
 	eps = eps_s + eps_g       
 	print "eps_g = ", eps_g, "eps = ", eps
 	
-	Nx = 25
-	pxmax = 3.14  / a
+	Nx = 40
+	pxmax = 3.14  / a * 0.3
 	alpha = (q_e)** 2 / 4.0 / math.pi / eps_0 / eps / nm / E_u / meV 
 	print "alpha = ", alpha
 	
 	print "alpha = ", alpha
 	h = 1.3
-	eta = 1.1
+	eta = 0.7
 	
-	E_u = 9.0
+	#E_u = 9.0 * eta / 1.2
 		
 	#px, py = makeGrid (Nx, Ny, pxmax, pymax)
 	#H = makeKinetic(px, py, eta) + alpha * makePotential (px, py, alpha, h)
@@ -308,15 +308,15 @@ if __name__ == '__main__':
 	eigFile.close()
 
 	Rmin = 0.0
-	Rmax = 5.0
+	Rmax = 10.0
 	nR = 500
 	Rvals = np.linspace (Rmin, Rmax, nR)
 
 	theta = 0.0
 	psi3, psi4, probDensity = transformToRSpace(px, py, a, theta, Rvals)
 
-	Emin = -50.0 
-	Emax =  50.0 
+	Emin = -200.0 
+	Emax =  100.0 
 	nE = 500
 	Evals = np.linspace (Emin/E_u, Emax/E_u, nE)
 
