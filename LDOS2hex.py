@@ -164,6 +164,8 @@ def makeKinetic(px, py, eta):
 	
 	return H0		
 
+
+
 def transformToRSpace (px, py, a, thetavals, Rvals):
 	nR = len(Rvals)
 	Ns = len(px)
@@ -219,6 +221,27 @@ def makeLDOS (psi3, psi4, probDensity, E, Evals, gamma):
 	print ("done")
 	return LDOS
 
+def transformToXYSpace(px, py, Ev, a, x, y, E_i, gamma):
+     nx = len(x)
+     ny = len(y)
+     N = nx * ny
+     thetas = np.zeros((N,))
+     Rs     = np.zeros((N,))
+     for i in range(nx):
+	 for j in range(ny):
+	     ij = i * ny + j; 
+	     thetas[ij] = math.atan2(y[j], x[i])
+	     Rs[ij] = math.sqrt(x[i]**2 + y[j]**2)
+     psi3, psi4, probFlat = transformToRSpace(px, py, a, thetas, Rs)
+     ldosFlat = makeLDOS(psi3, psi4, probFlat, Ev, np.array(E_i), gamma)
+     ldos = np.zeros((len(E_i), nx, ny))
+     for i in range(nx):
+	 for j in range(ny):
+	     ij = i * ny + j
+	     for k in range (len(E_i)):
+  	         ldos[k, i, j] = ldosFlat[k, ij]
+     return ldos
+
 def makeFilename(alpha, Nx, eta, h):
 	fname = 'data-hex-alpha=%g-N=%d-eta=%g-h=%g.npz' % (alpha, Nx,eta, h)
 	return fname
@@ -258,8 +281,8 @@ if __name__ == '__main__':
 	import matplotlib.pyplot as mpl 
 	from matplotlib import rc
 
-	rc('text', usetex = True)
-	rc('font', family = 'serif')
+	#rc('text', usetex = True)
+	rc('font', family = 'sans-serif')
     
 	q_e = 1.602e-19
 	nm = 1e-9
@@ -280,7 +303,7 @@ if __name__ == '__main__':
 	eps = eps_s + eps_g       
 	print "eps_g = ", eps_g, "eps = ", eps
 	
-	Nx = 40
+	Nx = 25
 	pxmax = 3.14  / a * 0.3
 	alpha = (q_e)** 2 / 4.0 / math.pi / eps_0 / eps / nm / E_u / meV 
 	print "alpha = ", alpha
@@ -293,10 +316,11 @@ if __name__ == '__main__':
 		
 	#px, py = makeGrid (Nx, Ny, pxmax, pymax)
 	#H = makeKinetic(px, py, eta) + alpha * makePotential (px, py, alpha, h)
-	if True:
-		px, py, E, a = solveAndSave(Nx, pxmax, alpha, h, eta)
-	else:
+	try:
 		px, py, E, a = loadSolution(Nx, alpha, h, eta)   
+	except:
+	        print "existing solution not available"
+		px, py, E, a = solveAndSave(Nx, pxmax, alpha, h, eta)
 	gamma = 1.0 / E_u
 
 	eigFile = open("eigenvalues-hex.txt",'w')
@@ -307,43 +331,86 @@ if __name__ == '__main__':
 		eigFile.write('\n')
 	eigFile.close()
 
-	Rmin = 0.0
-	Rmax = 10.0
-	nR = 500
-	Rvals = np.linspace (Rmin, Rmax, nR)
+	E_levels = np.array([])
+	#E_levels = np.array([-90.5, -46.6])
+ 	level_labels = ["A", "B"]
+	if True:
+   	   Rmin = 0.0
+	   Rmax = 10.0
+	   nR = 500
+	   Rvals = np.linspace (Rmin, Rmax, nR)
 
-	theta = 0.0
-	psi3, psi4, probDensity = transformToRSpace(px, py, a, theta, Rvals)
+	   theta = 0.0
+	   psi3, psi4, probDensity = transformToRSpace(px, py, a, theta, Rvals)
 
-	Emin = -200.0 
-	Emax =  100.0 
-	nE = 500
-	Evals = np.linspace (Emin/E_u, Emax/E_u, nE)
+	   Emin = -200.0
+	   Emax =  100.0
+	   #Emin = -100.0 
+	   #Emax =  50.0 
+	   nE = 500
+	   Evals = np.linspace (Emin/E_u, Emax/E_u, nE)
 
-	LDOS = makeLDOS(psi3, psi4, probDensity, E, Evals, gamma)
+	   LDOS = makeLDOS(psi3, psi4, probDensity, E, Evals, gamma)
 
-	XX, YY = np.meshgrid(Rvals, Evals)
+	   XX, YY = np.meshgrid(Rvals, Evals)
+	    
+	   print ("Creating color plot")
+	   mpl.figure()
+	   mpl.pcolor(XX, YY * E_u, LDOS)
+	   cb = mpl.colorbar()
+	   cb.set_label('DOS, a.u.', fontsize=18)
+           if False:
+	     for i, E_i in enumerate(E_levels):
+	       mpl.plot([Rmin, Rmax], [E_i, E_i], 'w--')
+	       mpl.text(0.6*Rmax, E_i, level_labels[i], verticalalignment='bottom', 
+	                bbox=dict(edgecolor='none', facecolor='white'), fontsize=18)
+	   mpl.xlim(Rmin, Rmax)
+	   mpl.ylim(Emin, Emax)
+	   theta_pi = theta / math.pi
+	
 
-	print ("Creating color plot")
-	mpl.figure()
-	mpl.pcolor(XX, YY * E_u, LDOS)
-	mpl.colorbar()
-	mpl.xlim(Rmin, Rmax)
-	mpl.ylim(Emin, Emax)
-	theta_pi = theta / math.pi
-
-	if    (abs(theta_pi) < 1e-4): 
+	   if    (abs(theta_pi) < 1e-4): 
 		theta_s = r'$\theta = 0$'
-	elif (abs(theta_pi - 1.0) < 1e-4): 
+	   elif (abs(theta_pi - 1.0) < 1e-4): 
 		theta_s = r'$\theta = \pi$'
-	else:
+	   else:
 		theta_s = r'$\theta = %g \pi$' % theta_pi
 
-	mpl.title(r'LDOS, $\alpha = %g$, $N = %d$, $\eta = %g$, $h = %g$,  %s' % (alpha, Nx, eta, h, theta_s))
-	mpl.xlabel(r'Distance $R$, nm')
-	mpl.ylabel(r'Energy $\epsilon$, meV')
+	   #mpl.title(r'LDOS, $\alpha = %g$, $N = %d$, $\eta = %g$, $h = %g$' % (alpha, Nx, eta, h))
+	   mpl.xlabel(r'Distance $R$, nm', fontsize=16)
+	   mpl.ylabel(r'Energy $\epsilon$, meV', fontsize=16)
+	   mpl.xticks(fontsize=14)
+	   mpl.yticks(fontsize=14)
 
-	mpl.figure()
-	mpl.hist(E * E_u, bins=100)
+	if False:
+   	   mpl.figure()
+	   mpl.hist(E * E_u, bins=100)
 
+	if False:
+   	   xmin = -2.5
+   	   xmax =  2.5 
+	   ymin = -2.5
+	   ymax = 2.5
+	   nx = 50
+	   ny = 50
+	   xvals = np.linspace(xmin, xmax, nx)
+	   yvals = np.linspace(ymin, ymax, ny)
+	   E_levels = np.array([-90.5, -52.1])
+   	   ldos = transformToXYSpace(px, py, E, a, xvals, yvals, E_levels / E_u, gamma)   
+	   for i, E_i in enumerate(E_levels): 
+	       mpl.figure()
+	       XX, YY = np.meshgrid(xvals, yvals)
+	       mpl.pcolor(XX, YY, ldos[i, :, :])
+	       mpl.text(xmax, ymax, level_labels[i], 
+	                horizontalalignment='right', verticalalignment='top', 
+			bbox=dict(facecolor='white', edgecolor='none'), fontsize=20)
+	       #mpl.title("E = %g" % E_i)
+	       mpl.xlabel("X, nm", fontsize=16)
+	       mpl.ylabel("Y, nm", fontsize=16)
+	       mpl.xlim(xmin, xmax)
+	       mpl.ylim(ymin, ymax)
+	       cb = mpl.colorbar()
+	       cb.set_label('DOS, a.u.', fontsize=18)
+	       mpl.xticks(fontsize=14)
+	       mpl.yticks(fontsize=14)
 	mpl.show()
